@@ -78,12 +78,14 @@
                         <span>Course Management</span>
                     }
                 </li>
-                <li class="@(IsActive(7))">
-                    <span class="material-icons">person</span>
-                    @if (!sidebarCollapsed)
-                    {
-                        <span>Student Data Management</span>
-                    }
+                <li>
+                    <NavLink class="sidebar-link" href="/student-management" Match="NavLinkMatch.All">
+                        <span class="material-icons">school</span>
+                        @if (!sidebarCollapsed)
+                        {
+                            <span>Student Management</span>
+                        }
+                    </NavLink>
                 </li>
                 <li class="@(IsActive(8))">
                     <span class="material-icons">layers</span>
@@ -99,6 +101,7 @@
                         <span>Timetable Management</span>
                     }
                 </li>
+                
             </ul>
         </nav>
         <div class="sidebar-footer">
@@ -316,6 +319,7 @@
     color: #8a8a99;
     transition: color 0.2s;
 }
+
 .sidebar-footer {
     border-top: 1.5px solid #e5e7eb;
     padding: 0 0 18px 0;
@@ -421,5 +425,35 @@
     cursor: pointer;
     z-index: 100;
     box-shadow: 0 2px 8px rgba(79, 125, 243, 0.08);
+}
+
+/* Center icons in collapsed sidebar */
+.sidebar.collapsed .sidebar-nav li,
+.sidebar.collapsed .sidebar-link {
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Hide text in collapsed sidebar for NavLink as well */
+.sidebar.collapsed .sidebar-link span:not(.material-icons) {
+    display: none !important;
+}
+
+/* Only color the icon when active/hover in collapsed mode */
+.sidebar.collapsed .sidebar-link.active .material-icons,
+.sidebar.collapsed .sidebar-link:hover .material-icons,
+.sidebar.collapsed li.active .material-icons,
+.sidebar.collapsed li:hover .material-icons {
+    color: #2563eb !important;
+}
+
+/* Keep icon color default for inactive */
+.sidebar.collapsed .sidebar-link .material-icons,
+.sidebar.collapsed li .material-icons {
+    color: #8a8a99 !important;
+    transition: color 0.2s;
 }
 </style>

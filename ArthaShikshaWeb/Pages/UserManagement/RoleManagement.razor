@@ -57,9 +57,9 @@
 
 @if (showModal)
 {
-    <div class="modal-backdrop" @onclick="CloseModal">
-        <div class="modal-dialog custom-modal" style="position:relative;" @onclick:stopPropagation>
-            <button type="button" class="close-btn" @onclick="CloseModal" style="position:absolute;top:24px;right:32px;z-index:2;">&times;</button>
+    <div class="modal-backdrop">
+        <div class="modal-dialog custom-modal">
+            <button type="button" class="close-btn" @onclick="CloseModal" style="position:absolute;top:24px;right:32px;">&times;</button>
             <div class="modal-header custom-modal-header">
                 <span>Add New Roles</span>
             </div>
@@ -234,12 +234,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 2000; /* Make sure this is above any layout/sidebar */
 }
 .modal-dialog {
     background: #fff;
     border-radius: 10px;
-    width: 600px;
+    width: 700px; /* Match min-width of .custom-modal */
+    min-width: 700px;
     max-width: 90vw;
     box-shadow: 0 2px 16px rgba(0,0,0,0.12);
     padding: 24px 32px 16px 32px;
@@ -374,10 +375,11 @@ textarea.modal-input {
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(79, 125, 243, 0.12);
     border: none;
-    min-width: 700px;
     padding: 0;
-    z-index: 1100;
+    z-index: 2100;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 .custom-modal-header {
     padding: 24px 32px 0 32px;
