@@ -1,0 +1,425 @@
+@inherits LayoutComponentBase
+
+<div class="main-layout">
+    <aside class="sidebar @(sidebarCollapsed ? "collapsed" : "")">
+        <div class="sidebar-header">
+            @if (!sidebarCollapsed)
+            {
+                <div class="sidebar-brand-group">
+                    <img src="logo.png" alt="Logo" class="logo" />
+                    <div class="brand">
+                        <div class="brand-title">Artha Shiksha</div>
+                        <div class="brand-subtitle">AI for e-Learning</div>
+                    </div>
+                </div>
+            }
+            <button class="sidebar-toggle" @onclick="ToggleSidebar">
+                <span class="material-icons">menu</span>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="@(IsActive(0))">
+                    <span class="material-icons">dashboard</span>
+                    @if (!sidebarCollapsed)
+                    {
+                        <span>Dashboard</span>
+                    }
+                </li>
+                <li>
+                    <NavLink href="/no-programs" class="sidebar-link" activeClass="active">
+                        <span class="material-icons">school</span>
+                        @if (!sidebarCollapsed)
+                        {
+                            <span>Program Management</span>
+                        }
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink href="/department-management" class="sidebar-link" activeClass="active">
+                        <span class="material-icons">apartment</span>
+                        @if (!sidebarCollapsed)
+                        {
+                            <span>Department Management</span>
+                        }
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink href="/hierarchy-management" class="sidebar-link" activeClass="active">
+                        <span class="material-icons">account_tree</span>
+                        @if (!sidebarCollapsed)
+                        {
+                            <span>Hierarchy Management</span>
+                        }
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink href="/role-management" class="sidebar-link" activeClass="active">
+                        <span class="material-icons">supervisor_account</span>
+                        @if (!sidebarCollapsed)
+                        {
+                            <span>Role Management</span>
+                        }
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink href="/faculty-management" class="sidebar-link" activeClass="active">
+                        <span class="material-icons">people</span>
+                        @if (!sidebarCollapsed)
+                        {
+                            <span>Faculty Management</span>
+                        }
+                    </NavLink>
+                </li>
+                <li class="@(IsActive(6))">
+                    <span class="material-icons">menu_book</span>
+                    @if (!sidebarCollapsed)
+                    {
+                        <span>Course Management</span>
+                    }
+                </li>
+                <li class="@(IsActive(7))">
+                    <span class="material-icons">person</span>
+                    @if (!sidebarCollapsed)
+                    {
+                        <span>Student Data Management</span>
+                    }
+                </li>
+                <li class="@(IsActive(8))">
+                    <span class="material-icons">layers</span>
+                    @if (!sidebarCollapsed)
+                    {
+                        <span>Batch Management</span>
+                    }
+                </li>
+                <li class="@(IsActive(9))">
+                    <span class="material-icons">event</span>
+                    @if (!sidebarCollapsed)
+                    {
+                        <span>Timetable Management</span>
+                    }
+                </li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-section notification-section">
+                <span class="material-icons notification-icon">notifications</span>
+                @if (!sidebarCollapsed)
+                {
+                    <span>Notifications</span>
+                }
+            </div>
+            <div class="sidebar-footer-section support-section">
+                <span class="material-icons support-icon">forum</span>
+                @if (!sidebarCollapsed)
+                {
+                    <span>Community &amp; Support</span>
+                }
+            </div>
+            @if (!sidebarCollapsed)
+            {
+                <div class="sidebar-user">
+                    <img src="avatar.png" alt="User" class="user-avatar" />
+                    <div>
+                        <div class="user-name">Jessica Pearson</div>
+                        <div class="user-email">jessica.pearson@phyku.com</div>
+                    </div>
+                    <span class="material-icons logout-icon">logout</span>
+                </div>
+            }
+            else
+            {
+                <div class="sidebar-user-collapsed">
+                    <img src="avatar.png" alt="User" class="user-avatar-collapsed" />
+                </div>
+            }
+        </div>
+    </aside>
+    <main class="main-content">
+        @Body
+    </main>
+    <div class="feedback-tab">Feedback</div>
+</div>
+
+@code {
+    private bool sidebarCollapsed = false;
+    private int activeIndex = 0;
+    private void ToggleSidebar() => sidebarCollapsed = !sidebarCollapsed;
+    private string IsActive(int index) => activeIndex == index ? "active" : "";
+}
+
+<style>
+.main-layout {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    overflow: hidden;
+}
+.sidebar {
+    width: 270px;
+    min-width: 270px;
+    height: 100vh;
+    background: #fff;
+    border-right: 2px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    transition: width 0.2s;
+    box-shadow: none;
+    position: relative;
+}
+.sidebar.collapsed {
+    width: 60px;
+    min-width: 60px;
+}
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 18px 10px 18px;
+    border-bottom: 1px solid #e5e7eb;
+    min-height: 60px;
+}
+.sidebar-brand-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.sidebar.collapsed .sidebar-header {
+    justify-content: center;
+    padding: 10px 0 10px 0;
+}
+.sidebar.collapsed .sidebar-brand-group,
+.sidebar.collapsed .logo,
+.sidebar.collapsed .brand,
+.sidebar.collapsed .brand-title,
+.sidebar.collapsed .brand-subtitle {
+    display: none !important;
+}
+.sidebar-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: contain;
+}
+.brand {
+    display: flex;
+    flex-direction: column;
+    margin-left: 4px;
+}
+.brand-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #22223b;
+    line-height: 1.1;
+}
+.brand-subtitle {
+    font-size: 0.85rem;
+    color: #4f7df3;
+    font-weight: 500;
+    line-height: 1.1;
+}
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-top: 10px;
+}
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.sidebar-nav li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px;
+    color: #22223b;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 8px;
+    margin: 0 8px;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+    border: 2px solid transparent;
+    background: transparent;
+}
+.sidebar.collapsed .sidebar-nav li {
+    justify-content: center;
+    padding: 10px 0;
+    gap: 0;
+    margin: 0 4px;
+}
+.sidebar.collapsed .sidebar-nav li span:not(.material-icons) {
+    display: none;
+}
+.sidebar-nav li.active, .sidebar-nav li:hover {
+    background: #f5f7fa;
+    color: #4f7df3;
+    border: 2px solid #4f7df3;
+}
+.sidebar.collapsed .sidebar-nav li.active, .sidebar.collapsed .sidebar-nav li:hover {
+    background: #f5f7fa;
+    color: #4f7df3;
+    border: 2px solid #4f7df3;
+}
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #22223b;
+    font-size: 1rem;
+    font-weight: 400;
+    text-decoration: none;
+    width: 100%;
+    height: 100%;
+    transition: color 0.2s;
+}
+
+/* Remove underline for all states */
+.sidebar-link,
+.sidebar-link:visited,
+.sidebar-link:active {
+    text-decoration: none;
+}
+
+/* Active and hover state for NavLink */
+.sidebar-link.active,
+.sidebar-link:hover {
+    color: #2563eb !important; /* blue-600 */
+    text-decoration: none;
+}
+
+.sidebar-link.active .material-icons,
+.sidebar-link:hover .material-icons {
+    color: #2563eb !important;
+}
+
+/* Optional: keep icon color default for inactive */
+.sidebar-link .material-icons {
+    color: #8a8a99;
+    transition: color 0.2s;
+}
+.sidebar-footer {
+    border-top: 1.5px solid #e5e7eb;
+    padding: 0 0 18px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: auto;
+}
+.sidebar-footer-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    color: #6b7280;
+    font-size: 1rem;
+    cursor: pointer;
+    min-height: 40px;
+    transition: background 0.2s, color 0.2s;
+}
+.sidebar-footer-section:hover {
+    background: #f5f7fa;
+    color: #4f7df3;
+}
+.sidebar.collapsed .sidebar-footer-section span:not(.material-icons) {
+    display: none;
+}
+.sidebar.collapsed .sidebar-footer-section {
+    justify-content: center;
+    padding: 10px 0;
+    gap: 0;
+}
+.sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 12px 18px 0 18px;
+    background: #f5f7fa;
+    border: 2px solid #4f7df3;
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+.sidebar.collapsed .sidebar-user {
+    display: none !important;
+}
+.sidebar-user-collapsed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: 16px;
+    margin-bottom: 4px;
+}
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #e0e7ff;
+}
+.user-avatar-collapsed {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #e0e7ff;
+    margin: 0 auto;
+    display: block;
+}
+.user-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #22223b;
+}
+.user-email {
+    font-size: 0.85rem;
+    color: #4f7df3;
+}
+.logout-icon {
+    margin-left: auto;
+    color: #4f7df3;
+    cursor: pointer;
+}
+.main-content {
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+}
+.feedback-tab {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    background: #fff;
+    color: #4f7df3;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 6px 6px 0 0;
+    padding: 6px 18px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(79, 125, 243, 0.08);
+}
+</style>

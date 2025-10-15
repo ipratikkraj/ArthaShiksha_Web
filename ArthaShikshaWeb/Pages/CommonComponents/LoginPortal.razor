@@ -1,0 +1,543 @@
+﻿@page "/"
+@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using ArthaShikshaClient.Pages.Shared
+@using LearniFyWeb.Services.AppService
+@using Newtonsoft.Json.Linq
+@using Radzen
+@using Blazored.SessionStorage
+
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject DialogService DialogService
+@inject ISessionStorageService Session
+@inject IAppService AppService
+
+@layout BlankComponent
+
+<PageTitle>Login - Artha Shiksha</PageTitle>
+
+<div class="login-container">
+    <!-- 70% width for background image -->
+    <div class="login-left-section">
+        <!-- Background image covers the entire left section -->
+    </div>
+
+    <!-- 30% width for login form -->
+    <div class="login-right-section">
+        <div class="login-form-wrapper">
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <span class="logo-text">Artha Shiksha</span>
+            </div>
+
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <RadzenText TextStyle="TextStyle.H5" class="welcome-title">Welcome!</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body2" class="welcome-subtitle">
+                    Please enter your login email & Password to start working.
+                </RadzenText>
+            </div>
+
+            <!-- Login Form -->
+            <RadzenTemplateForm TItem="LoginModel" Data="@loginModel" Submit="@OnSubmit" class="login-form">
+                <RadzenStack Gap="1rem">
+                    <!-- Email Field -->
+                    <div class="form-field">
+                        <RadzenLabel Text="Email Address" class="input-label" />
+                        <RadzenTextBox @bind-Value="loginModel.EmailId"
+                                       Name="EmailId"
+                                       Placeholder="test@example.com"
+                                       class="login-input" />
+                        <RadzenRequiredValidator Component="EmailId" Text="Email is required." />
+                        <RadzenEmailValidator Component="EmailId" Text="Enter a valid email." />
+                    </div>
+
+                    <!-- Password Field with Icon Inside -->
+                    <div class="form-field password-field-container">
+                        <RadzenLabel Text="Password" class="input-label" />
+                        <RadzenTextBox @bind-Value="loginModel.Password"
+                                       Name="Password"
+                                       type="@(showPassword ? "text" : "password")"
+                                       Placeholder="Enter your password"
+                                       class="login-input password-input" />
+                        <RadzenRequiredValidator Component="Password" Text="Password is required." />
+
+                        <!-- Eye icon positioned inside the input -->
+                        <span class="password-icon-inside" @onclick="TogglePasswordVisibility">
+                            @if (showPassword)
+                            {
+                                <span class="icon-symbol">👁️</span>
+                            }
+                            else
+                            {
+                                <span class="icon-symbol">🙈</span>
+                            }
+                        </span>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="remember-forgot-section">
+                        <div class="remember-section">
+                            <RadzenCheckBox @bind-Value="loginModel.RememberMe" Name="rememberMe" />
+                            <RadzenLabel Text="Remember me" Component="rememberMe" class="remember-label" />
+                        </div>
+                        <RadzenLink Text="Forgot Password?"
+                                    Path="/reset-password"
+                                    class="forgot-password-link" />
+                    </div>
+
+                    <!-- Error banner -->
+                    @if (showErrorMessage)
+                    {
+                        <div class="rz-message rz-message-error">
+                            <span class="rz-message-text">@errorText</span>
+                        </div>
+                    }
+
+
+                    <!-- Login Button -->
+                    <RadzenButton ButtonType="ButtonType.Submit"
+                                  ButtonStyle="ButtonStyle.Primary"
+                                  Text="@(isLoading ? "Logging in..." : "Login")"
+                                  Disabled="isLoading"
+                                  class="login-button" />
+                </RadzenStack>
+            </RadzenTemplateForm>
+
+            <!-- Footer - Now positioned below the form -->
+            <div class="footer-section">
+                <RadzenText TextStyle="TextStyle.Caption" class="footer-links">
+                    <RadzenLink Text="Privacy Policy" Path="/privacy" class="footer-link" />
+                    <span class="footer-separator"> | </span>
+                    <span class="powered-text">Powered by </span>
+                    <RadzenLink Text="ARTHA CHANAKYA" Path="#" class="company-link" />
+                </RadzenText>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private bool showPassword = false;
+
+    private bool isLoading = false;
+    private bool showErrorMessage = false;
+    private string errorText = "Invalid email or password.";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Prefill remembered email if available
+        var rememberedEmail = await Session.GetItemAsStringAsync("RememberedEmail");
+        if (!string.IsNullOrWhiteSpace(rememberedEmail))
+        {
+            loginModel.EmailId = rememberedEmail;
+            loginModel.RememberMe = true;
+        }
+    }
+
+    private async Task OnSubmit(LoginModel _)
+    {
+        await HandleLogin();
+    }
+
+    private async Task HandleLogin()
+    {
+        isLoading = true;
+        showErrorMessage = false;
+        StateHasChanged();
+
+        try
+        {
+            var response = await AppService.LogInPostHttpCall(loginModel.EmailId, loginModel.Password);
+
+            // Log the entire response for debugging
+           // await JSRuntime.InvokeVoidAsync("console.log", "Full response:", response);
+
+            if (response?.Data is JObject responseData)
+            {
+                // Log the responseData to see its structure
+              //  await JSRuntime.InvokeVoidAsync("console.log", "Response Data:", responseData.ToString());
+
+                // Check if we need to parse the response data
+                if (responseData != null)
+                {
+                    // Log the entire object structure
+                    await JSRuntime.InvokeVoidAsync("console.log", "Response Properties:", 
+                       responseData.Properties().Select(p => p.Name).ToList());
+
+                    // Try to get the success status from the response itself
+                    if (responseData.Value<string>("statusMessage")?.Contains("Login successfu", StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        // The user data appears to be directly in the responseData
+                        await ProcessSuccessfulLogin(responseData);
+                    }
+                    else
+                    {
+                        // Handle cases where the API indicates a login failure
+                        showErrorMessage = true;
+                        errorText = responseData.Value<string>("statusMessage") ?? "Invalid email or password.";
+                    }
+                }
+                else
+                {
+                    showErrorMessage = true;
+                    errorText = "Invalid response structure from server.";
+                }
+            }
+            else
+            {
+                showErrorMessage = true;
+                errorText = "Invalid response format.";
+            }
+        }
+        catch (Exception ex)
+        {
+            showErrorMessage = true;
+            errorText = "An error occurred while processing your request.";
+            //await JSRuntime.InvokeVoidAsync("console.error", $"Login error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ProcessSuccessfulLogin(JObject userData)
+    {
+        try
+        {
+            // Log the userData for debugging
+           // await JSRuntime.InvokeVoidAsync("console.log", "Processing user data:", userData.ToString());
+
+            // Extract properties using the exact keys from your JSON
+            var clientId = userData.Value<int>("clientId").ToString();
+            var userId = userData.Value<int>("userId").ToString();
+            var userName = userData.Value<string>("userName");
+            var roleId = userData.Value<int>("roleId").ToString();
+            var imageURL = userData.Value<string>("imageURL");
+            var emailId = userData.Value<string>("emailId");
+
+            if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(userId))
+            {
+                // Save relevant session values
+                await Session.SetItemAsync("UserSessionCompanyId", clientId);
+                await Session.SetItemAsync("UserSessionUserId", userId);
+                await Session.SetItemAsync("UserSessionUserName", userName);
+                await Session.SetItemAsync("UserSessionRoleId", roleId);
+                await Session.SetItemAsync("UserSessionImageURL", imageURL);
+                await Session.SetItemAsync("UserSessionEmail", emailId);
+
+                if (loginModel.RememberMe)
+                {
+                    await Session.SetItemAsync("RememberedEmail", loginModel.EmailId);
+                }
+                else
+                {
+                    await Session.RemoveItemAsync("RememberedEmail");
+                }
+
+                NavigationManager.NavigateTo("/no-programs", forceLoad: true);
+            }
+            else
+            {
+                await DialogService.Alert("Login response was incomplete. Missing required user data.", "Login Error");
+            }
+        }
+        catch (Exception ex)
+        {
+            //await JSRuntime.InvokeVoidAsync("console.error", "Error processing user data:", ex.Message);
+            throw;
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
+
+    public class LoginModel
+    {
+        [Required]
+        [EmailAddress]
+        public string EmailId { get; set; }
+
+        [Required]
+        public string Password { get; set; }
+
+        public bool RememberMe { get; set; }
+    }
+}
+
+<style>
+    /* Reset margins and ensure full viewport */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html, body {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    /* Main Container - Full Screen */
+    .login-container {
+        display: flex;
+        height: 100vh;
+        width: 100vw;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Left Section - 70% width with background image */
+    .login-left-section {
+        flex: 0 0 70%;
+        background-image: url('/images/Login.svg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: relative;
+    }
+
+    /* Right Section - 30% width for login form */
+    .login-right-section {
+        flex: 0 0 30%;
+        background-color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+    }
+
+    /* Login Form Wrapper - Changed positioning */
+    .login-form-wrapper {
+        width: 100%;
+        max-width: 350px;
+        min-width: 250px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* --- CSS ADDITION FOR RED ERROR TEXT --- */
+    /* This rule targets both the field validators and the main error banner. */
+    .rz-message.rz-message-error {
+        color: #d94141; /* Standard 'danger' red */
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
+
+    /* Logo Section */
+    .logo-section {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .logo-text {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2196F3;
+        letter-spacing: -0.5px;
+    }
+
+    /* Welcome Section */
+    .welcome-section {
+        text-align: left;
+        margin-bottom: 2rem;
+    }
+
+    .welcome-title {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+        font-size: 1.3rem;
+    }
+
+    .welcome-subtitle {
+        color: #666;
+        line-height: 1.4;
+        font-size: 0.9rem;
+    }
+
+    /* Form Styling */
+    .login-form {
+        width: 100%;
+        margin-bottom: 2rem; /* Add space between form and footer */
+    }
+
+    .form-field {
+        margin-bottom: 1rem;
+    }
+
+    /* Input Label Styling */
+    .input-label {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .login-input {
+        width: 100%;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: border-color 0.3s ease;
+    }
+
+        .login-input:focus {
+            border-color: #2196F3;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+        }
+
+    /* Password field container with relative positioning */
+    .password-field-container {
+        position: relative;
+    }
+
+    .password-input {
+        padding-right: 2.5rem;
+    }
+
+    .password-icon-inside {
+        position: absolute;
+        right: 0.75rem;
+        top: calc(50% + 0.75rem);
+        transform: translateY(-50%);
+        cursor: pointer;
+        user-select: none;
+        z-index: 1;
+    }
+
+    .icon-symbol {
+        font-size: 1.2rem;
+        color: #666;
+        transition: color 0.2s ease;
+    }
+
+    .password-icon-inside:hover .icon-symbol {
+        color: #2196F3;
+    }
+
+    /* Remember Me & Forgot Password Section */
+    .remember-forgot-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 1rem 0;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .remember-section {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .remember-label {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .forgot-password-link {
+        font-size: 0.9rem;
+        color: #2196F3;
+        text-decoration: none;
+    }
+
+        .forgot-password-link:hover {
+            text-decoration: underline;
+        }
+
+    /* Login Button */
+    .login-button {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 8px;
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .login-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+    /* Footer Section - Now positioned relative to form */
+    .footer-section {
+        text-align: center;
+        width: 100%;
+        margin-top: 1.5rem;
+    }
+
+    .footer-links {
+        font-size: 0.75rem;
+        color: #999;
+        line-height: 1.2;
+    }
+
+    .footer-link {
+        color: #999;
+        text-decoration: none;
+        margin: 0 0.3rem;
+    }
+
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+
+    .footer-separator {
+        margin: 0 0.3rem;
+        color: #ccc;
+    }
+
+    .powered-text {
+        color: #999;
+        margin: 0 0.3rem;
+    }
+
+    .company-link {
+        color: #4A90E2;
+        text-decoration: none;
+        font-weight: 500;
+        margin-left: 0.3rem;
+    }
+
+        .company-link:hover {
+            text-decoration: underline;
+        }
+
+    /* Remove px-4 padding */
+    .px-4 {
+        padding-right: 0 !important;
+        padding-left: 0 !important;
+    }
+
+    /* Remove content padding */
+    .content {
+        padding-top: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Or target the specific article element */
+    article.content.px-4 {
+        padding: 0 !important;
+    }
+</style>

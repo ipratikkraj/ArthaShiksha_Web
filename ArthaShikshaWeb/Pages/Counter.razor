@@ -1,0 +1,26 @@
+﻿@page "/counter"
+
+@inject Radzen.NotificationService NotificationService
+
+<PageTitle>Counter</PageTitle>
+
+<RadzenButton Click="@ButtonClicked" Text="Hi"></RadzenButton>
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" Wrap="FlexWrap.Wrap">
+    <RadzenButton Click=@(args => OnClick("Primary button")) Text="Primary" ButtonStyle="ButtonStyle.Primary" />
+    <RadzenButton Click=@(args => OnClick("Secondary button")) Text="Secondary" ButtonStyle="ButtonStyle.Secondary" />
+    <RadzenButton Click=@(args => OnClick("Base button")) Text="Base" ButtonStyle="ButtonStyle.Base" />
+    <RadzenButton Click=@(args => OnClick("Info button")) Text="Info" ButtonStyle="ButtonStyle.Info" />
+    <RadzenButton Click=@(args => OnClick("Success button ")) Text="Success" ButtonStyle="ButtonStyle.Success" />
+    <RadzenButton Click=@(args => OnClick("Warning button ")) Text="Warning" ButtonStyle="ButtonStyle.Warning" />
+    <RadzenButton Click=@(args => OnClick("Danger button")) Text="Danger" ButtonStyle="ButtonStyle.Danger" />
+</RadzenStack>
+@code {
+    void ButtonClicked()
+    {
+        // Handle the Click event of RadzenButton
+    }
+    private void OnClick(string text)
+    {
+        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Button Clicked", Detail = text });
+    }
+}

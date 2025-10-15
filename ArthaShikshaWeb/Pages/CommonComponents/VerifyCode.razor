@@ -1,0 +1,488 @@
+﻿@page "/verify-code"
+@using System.ComponentModel.DataAnnotations
+@using ArthaShikshaClient.Pages.Shared
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@layout BlankComponent
+
+<PageTitle>Verify Code - Artha Shiksha</PageTitle>
+
+<div class="verify-container">
+    <!-- 70% width for background with study book image -->
+    <div class="verify-left-section">
+        <!-- Background covers the entire left section -->
+    </div>
+
+    <!-- 30% width for verification form -->
+    <div class="verify-right-section">
+        <div class="verify-form-wrapper">
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <span class="logo-text">Artha Shiksha</span>
+            </div>
+
+            <!-- Verification Icon -->
+            <div class="verify-icon-section">
+                <RadzenIcon Icon="lock_reset" class="verify-icon" />
+            </div>
+
+            <!-- Verification Form -->
+            <RadzenTemplateForm TItem="VerifyCodeModel" Data="@verifyModel" Submit="@OnSubmit" class="verify-form">
+                <RadzenStack Gap="1.5rem">
+                    <!-- Title Section -->
+                    <div class="verify-title-section">
+                        <RadzenText TextStyle="TextStyle.H5" class="verify-title">Reset Password</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body2" class="verify-subtitle">
+                            Enter your email to receive a 6-digit verification code and reset your password.
+                        </RadzenText>
+                    </div>
+
+                    <!-- 6-Digit Verification Code Input -->
+                    <div class="otp-section">
+                        <div class="otp-inputs">
+                            <RadzenTextBox @bind-Value="@digit1" @oninput="@((args) => OnDigitInput(args, 1))"
+                                           @onkeydown="@((args) => OnKeyDown(args, 1))"
+                                           class="otp-input" maxlength="1" id="digit-1" />
+                            <RadzenTextBox @bind-Value="@digit2" @oninput="@((args) => OnDigitInput(args, 2))"
+                                           @onkeydown="@((args) => OnKeyDown(args, 2))"
+                                           class="otp-input" maxlength="1" id="digit-2" />
+                            <RadzenTextBox @bind-Value="@digit3" @oninput="@((args) => OnDigitInput(args, 3))"
+                                           @onkeydown="@((args) => OnKeyDown(args, 3))"
+                                           class="otp-input" maxlength="1" id="digit-3" />
+                            <RadzenTextBox @bind-Value="@digit4" @oninput="@((args) => OnDigitInput(args, 4))"
+                                           @onkeydown="@((args) => OnKeyDown(args, 4))"
+                                           class="otp-input" maxlength="1" id="digit-4" />
+                            <RadzenTextBox @bind-Value="@digit5" @oninput="@((args) => OnDigitInput(args, 5))"
+                                           @onkeydown="@((args) => OnKeyDown(args, 5))"
+                                           class="otp-input" maxlength="1" id="digit-5" />
+                            <RadzenTextBox @bind-Value="@digit6" @oninput="@((args) => OnDigitInput(args, 6))"
+                                           @onkeydown="@((args) => OnKeyDown(args, 6))"
+                                           class="otp-input" maxlength="1" id="digit-6" />
+                        </div>
+                        <RadzenText TextStyle="TextStyle.Caption" class="otp-helper">
+                            Receive verification code in 60 seconds.
+                        </RadzenText>
+                    </div>
+
+                    <!-- Send Verification Button -->
+                    <RadzenButton ButtonType="ButtonType.Submit"
+                                  ButtonStyle="ButtonStyle.Primary"
+                                  Text="Send Verification Code"
+                                  class="verify-button"
+                                  Disabled="@(!IsCodeComplete)" />
+
+                    <!-- Back Link -->
+                    <div class="back-section">
+                        <RadzenText TextStyle="TextStyle.Body2" class="back-text">
+                            If you are not receiving a phone call, you Please
+                            <RadzenLink Text="check your spam folder first." Path="#" class="spam-link" />
+                        </RadzenText>
+                    </div>
+                </RadzenStack>
+            </RadzenTemplateForm>
+
+            <!-- Footer -->
+            <div class="footer-section">
+                <RadzenText TextStyle="TextStyle.Caption" class="footer-links">
+                    <RadzenLink Text="Privacy Policy" Path="/privacy" class="footer-link" />
+                    <span class="footer-separator">|</span>
+                    <span class="powered-text">Powered by</span>
+                    <RadzenLink Text="ARTHA CHANAKYA" Path="#" class="company-link" />
+                </RadzenText>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private VerifyCodeModel verifyModel = new VerifyCodeModel();
+    private string digit1 = "";
+    private string digit2 = "";
+    private string digit3 = "";
+    private string digit4 = "";
+    private string digit5 = "";
+    private string digit6 = "";
+
+    private bool IsCodeComplete =>
+        !string.IsNullOrEmpty(digit1) && !string.IsNullOrEmpty(digit2) &&
+        !string.IsNullOrEmpty(digit3) && !string.IsNullOrEmpty(digit4) &&
+        !string.IsNullOrEmpty(digit5) && !string.IsNullOrEmpty(digit6);
+
+    private async Task OnDigitInput(ChangeEventArgs args, int digitPosition)
+    {
+        var value = args.Value?.ToString() ?? "";
+
+        // Only allow single digit
+        if (value.Length > 1)
+            value = value.Substring(value.Length - 1);
+
+        // Only allow numbers
+        if (!string.IsNullOrEmpty(value) && !char.IsDigit(value[0]))
+            return;
+
+        // Update the appropriate digit
+        switch (digitPosition)
+        {
+            case 1: digit1 = value; break;
+            case 2: digit2 = value; break;
+            case 3: digit3 = value; break;
+            case 4: digit4 = value; break;
+            case 5: digit5 = value; break;
+            case 6: digit6 = value; break;
+        }
+
+        // Auto-focus next field
+        if (!string.IsNullOrEmpty(value) && digitPosition < 6)
+        {
+            await JSRuntime.InvokeVoidAsync("focusElement", $"digit-{digitPosition + 1}");
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs args, int digitPosition)
+    {
+        // Handle backspace to go to previous field
+        if (args.Key == "Backspace" && digitPosition > 1)
+        {
+            var currentValue = digitPosition switch
+            {
+                1 => digit1,
+                2 => digit2,
+                3 => digit3,
+                4 => digit4,
+                5 => digit5,
+                6 => digit6,
+                _ => ""
+            };
+
+            if (string.IsNullOrEmpty(currentValue))
+            {
+                await JSRuntime.InvokeVoidAsync("focusElement", $"digit-{digitPosition - 1}");
+            }
+        }
+    }
+
+    private async Task OnSubmit(VerifyCodeModel model)
+    {
+        try
+        {
+            var verificationCode = $"{digit1}{digit2}{digit3}{digit4}{digit5}{digit6}";
+            Console.WriteLine($"Verification code entered: {verificationCode}");
+
+            // Your verification logic here
+            // Example:
+            // var result = await AuthService.VerifyCodeAsync(verificationCode);
+
+            // if (result.IsSuccess)
+            // {
+            //     Navigation.NavigateTo("/dashboard");
+            // }
+            // else
+            // {
+            //     await JSRuntime.InvokeVoidAsync("alert", "Invalid verification code");
+            // }
+
+            await JSRuntime.InvokeVoidAsync("alert", $"Verification code: {verificationCode}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Verification error: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", "Verification failed. Please try again.");
+        }
+    }
+
+    public class VerifyCodeModel
+    {
+        public string VerificationCode { get; set; } = string.Empty;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("addFocusScript");
+        }
+    }
+}
+
+<style>
+    /* Reset and base styles */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html, body {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    /* Main Container */
+    .verify-container {
+        display: flex;
+        height: 100vh;
+        width: 100vw;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Left Section - 70% with study book background */
+    .verify-left-section {
+        flex: 0 0 70%;
+        background-image: url('/images/Reset Password.svg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: relative;
+    }
+
+    /* Right Section - 30% verification form */
+    .verify-right-section {
+        flex: 0 0 30%;
+        background-color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        position: relative;
+    }
+
+    /* Form Wrapper */
+    .verify-form-wrapper {
+        width: 100%;
+        max-width: 350px;
+        min-width: 250px;
+        text-align: center;
+    }
+
+    /* Logo Section */
+    .logo-section {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .logo-text {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2196F3;
+        letter-spacing: -0.5px;
+    }
+    /* Verification Icon */
+    .verify-icon-section {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .verify-icon {
+        font-size: 3rem;
+        color: #4A90E2;
+        background-color: #E8F4FD;
+        padding: 1rem;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Title Section */
+    .verify-title-section {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .verify-title {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+        font-size: 1.4rem;
+    }
+
+    .verify-subtitle {
+        color: #666;
+        line-height: 1.4;
+        font-size: 0.9rem;
+    }
+
+    /* OTP Section */
+    .otp-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .otp-inputs {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .otp-input {
+        width: 45px;
+        height: 45px;
+        text-align: center;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        transition: border-color 0.3s ease;
+    }
+
+        .otp-input:focus {
+            border-color: #4A90E2;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+        }
+
+        .otp-input:not(:placeholder-shown) {
+            border-color: #4A90E2;
+            background-color: #f8fbff;
+        }
+
+    .otp-helper {
+        color: #666;
+        font-size: 0.8rem;
+        text-align: center;
+    }
+
+    /* Form Styling */
+    .verify-form {
+        width: 100%;
+    }
+
+    /* Verify Button */
+    .verify-button {
+        width: 100%;
+        background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+        border: none;
+        border-radius: 8px;
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .verify-button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+        }
+
+        .verify-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+    /* Back Section */
+    .back-section {
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .back-text {
+        font-size: 0.85rem;
+        color: #666;
+        line-height: 1.4;
+    }
+
+    .spam-link {
+        color: #4A90E2;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+        .spam-link:hover {
+            text-decoration: underline;
+        }
+
+    /* Footer Section */
+    .footer-section {
+        position: absolute;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        width: 100%;
+        padding: 0 1rem;
+    }
+
+    .footer-links {
+        font-size: 0.75rem;
+        color: #999;
+        line-height: 1.2;
+    }
+
+    .footer-link {
+        color: #999;
+        text-decoration: none;
+        margin: 0 0.3rem;
+    }
+
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+
+    .footer-separator {
+        margin: 0 0.3rem;
+        color: #ccc;
+    }
+
+    .powered-text {
+        color: #999;
+        margin: 0 0.3rem;
+    }
+
+    .company-link {
+        color: #4A90E2;
+        text-decoration: none;
+        font-weight: 500;
+        margin-left: 0.3rem;
+    }
+
+        .company-link:hover {
+            text-decoration: underline;
+        }
+
+    /* Remove px-4 padding */
+    .px-4 {
+        padding-right: 0 !important;
+        padding-left: 0 !important;
+    }
+
+    /* Remove content padding */
+    .content {
+        padding-top: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Or target the specific article element */
+    article.content.px-4 {
+        padding: 0 !important;
+    }
+</style>
+
+<script>
+    window.focusElement = (elementId) => {
+        setTimeout(() => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.focus();
+            }
+        }, 100);
+    };
+
+    window.addFocusScript = () => {
+        // Auto-focus first input on page load
+        setTimeout(() => {
+            const firstInput = document.getElementById('digit-1');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        }, 500);
+    };
+</script>

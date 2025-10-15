@@ -1,0 +1,400 @@
+﻿@page "/role-management"
+
+@using System.ComponentModel.DataAnnotations
+
+@code {
+    private bool showModal = false;
+
+    private RoleModel newRole = new();
+
+    private void OpenModal() => showModal = true;
+    private void CloseModal()
+    {
+        showModal = false;
+        StateHasChanged();
+    }
+
+    private void SaveRole()
+    {
+        // Save logic here
+        CloseModal();
+    }
+
+    public class RoleModel
+    {
+        [Required] public string RoleName { get; set; }
+        [Required] public string RoleId { get; set; }
+        public string HierarchyLevel { get; set; }
+        public string Permission { get; set; }
+        public string RoleType { get; set; }
+        public int AssignableUserCount { get; set; }
+        public string RoleDescription { get; set; }
+        public bool CurrentStatus { get; set; }
+    }
+}
+
+<div class="role-management-bg">
+    <div class="role-management-center">
+        <div class="role-empty-card">
+            <img src="images/empty-role.svg" alt="No Roles" class="role-empty-img" />
+            <div class="role-empty-title">You haven’t created any custom roles yet.</div>
+            <div class="role-empty-desc">
+                Create your first role to assign to faculty and staff.
+            </div>
+            <div class="role-empty-actions">
+                <button class="btn btn-primary" @onclick="OpenModal">
+                    <span class="material-icons">add</span>
+                    Create Role
+                </button>
+                <button class="btn btn-outline">
+                    <span class="material-icons">cloud_upload</span>
+                    Bulk Upload
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (showModal)
+{
+    <div class="modal-backdrop" @onclick="CloseModal">
+        <div class="modal-dialog custom-modal" style="position:relative;" @onclick:stopPropagation>
+            <button type="button" class="close-btn" @onclick="CloseModal" style="position:absolute;top:24px;right:32px;z-index:2;">&times;</button>
+            <div class="modal-header custom-modal-header">
+                <span>Add New Roles</span>
+            </div>
+            <EditForm Model="@newRole" OnValidSubmit="SaveRole">
+                <div class="modal-body custom-modal-body">
+                    <div class="modal-row">
+                        <div class="modal-col">
+                            <label class="modal-label">Role Name <span class="required">*</span></label>
+                            <input class="modal-input" placeholder="Dean" @bind="newRole.RoleName" />
+                        </div>
+                        <div class="modal-col">
+                            <label class="modal-label">Role ID <span class="required">*</span></label>
+                            <input class="modal-input" placeholder="AP101" @bind="newRole.RoleId" />
+                        </div>
+                    </div>
+                    <div class="modal-row">
+                        <div class="modal-col">
+                            <label class="modal-label">Select Hierarchy Level</label>
+                            <input class="modal-input" placeholder="System" @bind="newRole.HierarchyLevel" />
+                        </div>
+                        <div class="modal-col">
+                            <label class="modal-label">Permission</label>
+                            <input class="modal-input permission-input" placeholder="Manage Students, View Reports +12" @bind="newRole.Permission" />
+                        </div>
+                    </div>
+                    <div class="modal-row">
+                        <div class="modal-col">
+                            <label class="modal-label">Role Type <span class="required">*</span></label>
+                            <select class="modal-input" @bind="newRole.RoleType">
+                                <option value="">Select</option>
+                                <option>Teaching</option>
+                                <option>Non-Teaching</option>
+                            </select>
+                        </div>
+                        <div class="modal-col">
+                            <label class="modal-label">Assignable User Count</label>
+                            <input class="modal-input" type="number" placeholder="1" @bind="newRole.AssignableUserCount" />
+                        </div>
+                    </div>
+                    <div class="modal-row">
+                        <div class="modal-col-full">
+                            <label class="modal-label">Role Description</label>
+                            <textarea class="modal-input" placeholder="Responsible for delivering lectures and assisting senior faculty." @bind="newRole.RoleDescription"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-row align-center">
+                        <label class="modal-label">Current Status <span class="info-icon" title="Active/Inactive">&#9432;</span></label>
+                        <label class="switch">
+                            <input type="checkbox" @bind="newRole.CurrentStatus" />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer custom-modal-footer">
+                    <button type="submit" class="btn btn-gradient">Save</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<style>
+.role-management-bg {
+    min-height: 100vh;
+    width: 100%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.role-management-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px 0 0 0;
+}
+
+.role-empty-card {
+    width: 100%;
+    max-width: 1700px;
+    min-width: 600px;
+    min-height: 350px;
+    background: #fff;
+    border: 1.5px solid #dbeafe;
+    border-radius: 10px;
+    margin: 32px auto 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 0 40px 0;
+    box-shadow: 0 2px 8px rgba(79, 125, 243, 0.04);
+}
+
+.role-empty-img {
+    width: 180px;
+    margin-bottom: 18px;
+}
+
+.role-empty-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #22223b;
+    margin-bottom: 8px;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.role-empty-desc {
+    font-size: 1rem;
+    color: #8a8a99;
+    margin-bottom: 28px;
+    text-align: center;
+    max-width: 600px;
+}
+
+.role-empty-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 8px 20px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+    outline: none;
+}
+
+.btn-primary {
+    background: #4f7df3;
+    color: #fff;
+    border: 1.5px solid #4f7df3;
+}
+
+.btn-primary:hover {
+    background: #3b5fc9;
+    border-color: #3b5fc9;
+}
+
+.btn-outline {
+    background: #fff;
+    color: #4f7df3;
+    border: 1.5px solid #4f7df3;
+}
+
+.btn-outline:hover {
+    background: #f5f7fa;
+    color: #3b5fc9;
+    border-color: #3b5fc9;
+}
+
+.material-icons {
+    font-size: 20px;
+    vertical-align: middle;
+}
+
+/* Modal styles */
+.modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal-dialog {
+    background: #fff;
+    border-radius: 10px;
+    width: 600px;
+    max-width: 90vw;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+    padding: 24px 32px 16px 32px;
+    position: relative;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+.close-btn {
+    z-index: 1200;
+    position: relative;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.modal-row {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 16px;
+}
+.modal-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.modal-col-full {
+    flex: 1 1 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.modal-label {
+    font-size: 0.98rem;
+    color: #22223b;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+.required {
+    color: #f44336;
+    font-size: 1rem;
+}
+.info-icon {
+    color: #b0b0b0;
+    font-size: 1rem;
+    margin-left: 4px;
+    cursor: pointer;
+}
+.modal-input, .modal-input:focus, textarea.modal-input, select.modal-input {
+    background: #fff;
+    border: 1.5px solid #e3e8f7;
+    border-radius: 6px;
+    font-size: 1rem;
+    padding: 10px 14px;
+    outline: none;
+    transition: border 0.2s;
+    box-shadow: none;
+    color: #22223b;
+}
+textarea.modal-input {
+    min-height: 56px;
+    resize: vertical;
+}
+.btn-gradient {
+    background: linear-gradient(90deg, #4f7df3 0%, #7f9cf5 100%);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 36px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(79, 125, 243, 0.08);
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-gradient:hover {
+    background: linear-gradient(90deg, #3b5fc9 0%, #4f7df3 100%);
+    box-shadow: 0 4px 16px rgba(79, 125, 243, 0.16);
+}
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    margin-left: 8px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #e3e8f7;
+    border-radius: 24px;
+    transition: .4s;
+}
+.switch input:checked + .slider {
+    background: linear-gradient(90deg, #4f7df3 0%, #7f9cf5 100%);
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: .4s;
+    box-shadow: 0 1px 4px rgba(79, 125, 243, 0.12);
+}
+.switch input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+/* Custom modal styles */
+.custom-modal {
+    background: linear-gradient(135deg, #f8fafc 0%, #e9eefd 100%);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(79, 125, 243, 0.12);
+    border: none;
+    min-width: 700px;
+    padding: 0;
+    z-index: 1100;
+    position: relative;
+}
+.custom-modal-header {
+    padding: 24px 32px 0 32px;
+    border-radius: 12px 12px 0 0;
+    background: transparent;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #22223b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.custom-modal-body {
+    padding: 16px 32px 0 32px;
+}
+.custom-modal-footer {
+    padding: 16px 32px 24px 32px;
+    background: transparent;
+}
+</style>

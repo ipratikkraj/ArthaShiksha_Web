@@ -1,0 +1,134 @@
+﻿@page "/faculty-management"
+
+
+<div class="faculty-management-bg">
+    <div class="faculty-management-center">
+        <div class="faculty-empty-card">
+            <img src="images/empty-faculty.svg" alt="No Faculty" class="faculty-empty-img" />
+            <div class="faculty-empty-title">No Faculty added yet!</div>
+            <div class="faculty-empty-desc">
+                Add faculties to manage teaching, courses, and assign departments!
+            </div>
+            <div class="faculty-empty-actions">
+                <button class="btn btn-blue">
+                    <span class="material-icons">add</span>
+                    Add New Faculty
+                </button>
+                <button class="btn btn-outline">
+                    <span class="material-icons">cloud_upload</span>
+                    Bulk Upload
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.faculty-management-bg {
+    min-height: 100vh;
+    width: 100%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.faculty-management-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px 0 0 0;
+}
+
+.faculty-empty-card {
+    width: 100%;
+    max-width: 1700px;
+    min-width: 600px;
+    min-height: 350px;
+    background: #fff;
+    border: 1.5px solid #dbeafe;
+    border-radius: 10px;
+    margin: 32px auto 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 0 40px 0;
+    box-shadow: 0 2px 8px rgba(79, 125, 243, 0.04);
+}
+
+.faculty-empty-img {
+    width: 220px;
+    margin-bottom: 18px;
+}
+
+.faculty-empty-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #22223b;
+    margin-bottom: 8px;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.faculty-empty-desc {
+    font-size: 1rem;
+    color: #8a8a99;
+    margin-bottom: 28px;
+    text-align: center;
+    max-width: 600px;
+}
+
+.faculty-empty-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 8px 20px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+    outline: none;
+}
+
+.btn-blue {
+    background: #4f7df3;
+    color: #fff;
+    border: 1.5px solid #4f7df3;
+}
+
+.btn-blue:hover {
+    background: #3b5fc9;
+    border-color: #3b5fc9;
+}
+
+.btn-outline {
+    background: #fff;
+    color: #4f7df3;
+    border: 1.5px solid #4f7df3;
+}
+
+.btn-outline:hover {
+    background: #f5f7fa;
+    color: #3b5fc9;
+    border-color: #3b5fc9;
+}
+
+.material-icons {
+    font-size: 20px;
+    vertical-align: middle;
+}
+</style>
+
+@code {
+
+}

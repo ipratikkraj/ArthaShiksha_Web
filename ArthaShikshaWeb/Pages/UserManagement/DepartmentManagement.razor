@@ -1,0 +1,369 @@
+﻿@page "/department-management"
+@using System.ComponentModel.DataAnnotations
+
+<div class="department-management-bg">
+    <div class="department-management-center">
+        <div class="department-empty-card">
+            <img src="images/empty-department.svg" alt="No Department" class="department-empty-img" />
+            <div class="department-empty-title">No Department added yet!</div>
+            <div class="department-empty-desc">
+                Let’s get started by creating your first department. Connect your department, add content or let AI create
+                a starter pack and take a quick tour of your new teaching space.
+            </div>
+            <div class="department-empty-actions">
+                <button class="btn btn-primary" @onclick="ShowAddDepartmentModal">
+                    <span class="material-icons">add</span>
+                    Add New Department
+                </button>
+                <button class="btn btn-outline">
+                    <span class="material-icons">cloud_upload</span>
+                    Bulk Upload
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (showAddDepartmentModal)
+{
+    <div class="modal-backdrop" @onclick="CloseAddDepartmentModal"></div>
+    <div class="modal-container department-modal">
+        <div class="modal-header">
+            <span>Add New Department</span>
+            <button class="modal-close" @onclick="CloseAddDepartmentModal">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <EditForm Model="@departmentModel" OnValidSubmit="SaveDepartment">
+            <div class="modal-body">
+                <div class="modal-form-row">
+                    <div class="modal-form-group">
+                        <label>Department Name <span class="required">*</span></label>
+                        <InputText class="modal-input" @bind-Value="departmentModel.Name" placeholder="e.g. Computer Science & Engineering" />
+                    </div>
+                    <div class="modal-form-group">
+                        <label>Department Code <span class="required">*</span></label>
+                        <InputText class="modal-input" @bind-Value="departmentModel.Code" placeholder="e.g. E101" />
+                    </div>
+                </div>
+                <div class="modal-form-row">
+                    <div class="modal-form-group">
+                        <label>Assigned HOD <span class="required">*</span></label>
+                        <InputSelect class="modal-input" @bind-Value="departmentModel.HOD">
+                            <option value="">Select HOD</option>
+                            <option>Dr. Heena Parikar</option>
+                            <option>Dr. John Doe</option>
+                            <option>Dr. Jane Smith</option>
+                        </InputSelect>
+                    </div>
+                    <div class="modal-form-group">
+                        <label>Selected Program <span class="required">*</span></label>
+                        <InputSelect class="modal-input" @bind-Value="departmentModel.Program">
+                            <option value="">Select Program</option>
+                            <option>Engineering</option>
+                            <option>Science</option>
+                            <option>Arts</option>
+                        </InputSelect>
+                    </div>
+                </div>
+                <div class="modal-form-row">
+                    <div class="modal-form-group modal-form-group-full">
+                        <label>Department Description</label>
+                        <InputTextArea class="modal-input" @bind-Value="departmentModel.Description" rows="2" placeholder="Department Description" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary modal-save-btn">Save</button>
+            </div>
+        </EditForm>
+    </div>
+}
+
+@code {
+    private bool showAddDepartmentModal = false;
+
+    private DepartmentModel departmentModel = new();
+
+    private void ShowAddDepartmentModal()
+    {
+        showAddDepartmentModal = true;
+    }
+
+    private void CloseAddDepartmentModal()
+    {
+        showAddDepartmentModal = false;
+        departmentModel = new();
+    }
+
+    private void SaveDepartment()
+    {
+        // Save logic here
+        showAddDepartmentModal = false;
+    }
+
+    public class DepartmentModel
+    {
+        [Required]
+        public string Name { get; set; }
+        [Required]
+        public string Code { get; set; }
+        [Required]
+        public string HOD { get; set; }
+        [Required]
+        public string Program { get; set; }
+        public string Description { get; set; }
+    }
+}
+
+<style>
+.department-management-bg {
+    min-height: 100vh;
+    width: 100%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.department-management-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px 0 0 0;
+}
+
+.department-empty-card {
+    width: 100%;
+    max-width: 1700px;
+    min-width: 600px;
+    min-height: 350px;
+    background: #fff;
+    border: 1.5px solid #dbeafe;
+    border-radius: 10px;
+    margin: 32px auto 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 0 40px 0;
+    box-shadow: 0 2px 8px rgba(79, 125, 243, 0.04);
+}
+
+.department-empty-img {
+    width: 180px;
+    margin-bottom: 18px;
+}
+
+.department-empty-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #22223b;
+    margin-bottom: 8px;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.department-empty-desc {
+    font-size: 1rem;
+    color: #8a8a99;
+    margin-bottom: 28px;
+    text-align: center;
+    max-width: 600px;
+}
+
+.department-empty-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 8px 20px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+    outline: none;
+}
+
+.btn-primary {
+    background: #4f7df3;
+    color: #fff;
+    border: 1.5px solid #4f7df3;
+}
+
+.btn-primary:hover {
+    background: #3b5fc9;
+    border-color: #3b5fc9;
+}
+
+.btn-outline {
+    background: #fff;
+    color: #4f7df3;
+    border: 1.5px solid #4f7df3;
+}
+
+.btn-outline:hover {
+    background: #f5f7fa;
+    color: #3b5fc9;
+    border-color: #3b5fc9;
+}
+
+.material-icons {
+    font-size: 20px;
+    vertical-align: middle;
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+    position: fixed;
+    z-index: 1001;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(34, 34, 59, 0.18);
+    backdrop-filter: blur(1.5px);
+}
+
+/* Modal Container */
+.modal-container {
+    position: fixed;
+    z-index: 1002;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 600px;
+    max-width: 700px;
+    width: 100%;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 16px rgba(34,34,59,0.10);
+    border: 1.5px solid #e5e7eb;
+    padding: 0;
+    animation: modalIn 0.18s;
+}
+
+.department-modal {
+    min-width: 700px;
+    max-width: 800px;
+    padding-bottom: 8px;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 32px 10px 32px;
+    font-size: 1.08rem;
+    font-weight: 600;
+    color: #22223b;
+    border-bottom: none;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #8a8a99;
+    font-size: 1.5rem;
+    padding: 4px;
+    margin-left: 8px;
+}
+
+.modal-body {
+    padding: 0 32px 0 32px;
+    margin-top: 8px;
+}
+
+.modal-form-row {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.modal-form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-form-group-full {
+    flex: 2;
+}
+
+.modal-form-group label {
+    font-size: 0.97rem;
+    color: #8a8a99;
+    font-weight: 500;
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+}
+
+.required {
+    color: #f44336;
+    font-size: 1.1em;
+    margin-left: 2px;
+}
+
+.modal-input, .modal-input:focus, .modal-input:active, .modal-input:visited {
+    font-size: 1rem;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 10px 12px;
+    outline: none;
+    background: #f8fafc;
+    color: #22223b;
+    font-family: inherit;
+    font-weight: 500;
+    transition: border 0.2s;
+    margin-bottom: 0;
+    resize: none;
+}
+
+.modal-input:focus {
+    border: 1.5px solid #4f7df3;
+    background: #fff;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 18px 32px 22px 32px;
+    border-top: none;
+}
+
+.modal-save-btn {
+    min-width: 90px;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 8px 0;
+    box-shadow: 0 2px 8px rgba(79, 125, 243, 0.08);
+}
+
+keyframes modalIn {
+    from { opacity: 0; transform: translate(-50%, -46%);}
+    to { opacity: 1; transform: translate(-50%, -50%);}
+}
+
+media (max-width: 900px) {
+    .department-modal {
+        min-width: 98vw;
+        max-width: 98vw;
+        padding: 0;
+    }
+    .modal-header, .modal-body, .modal-footer {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+    .modal-form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+</style>

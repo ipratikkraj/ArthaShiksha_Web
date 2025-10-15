@@ -1,0 +1,234 @@
+﻿@page "/students"
+@using System.Text.Json
+@using LearniFyWeb.Services.AppService
+@using Newtonsoft.Json.Linq
+@using System.Net
+@inject HttpClient Http
+@inject IAppService appservice
+
+<PageTitle>Students Grid</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-pt-4 rz-pb-4">
+                Students Management
+            </RadzenText>
+
+            <!-- Students DataGrid -->
+            <RadzenDataGrid @ref="grid" 
+                            Data="@students" 
+                            TItem="Student"
+                            AllowSorting="true"
+                            AllowFiltering="true"
+                            FilterMode="FilterMode.Simple"
+                            IsLoading="@isLoading"
+                            Style="height: 600px;"
+                            GridLines="DataGridGridLines.Both"
+                            Density="Density.Compact">
+                
+                <Columns>
+                    <RadzenDataGridColumn TItem="Student" 
+                                          Property="Id" 
+                                          Title="ID" 
+                                          Width="80px"
+                                          TextAlign="TextAlign.Center"
+                                          Sortable="true" />
+                    
+                    <RadzenDataGridColumn TItem="Student" 
+                                          Property="FirstName" 
+                                          Title="First Name"
+                                          Width="150px"
+                                          Sortable="true" />
+
+                    <RadzenDataGridColumn TItem="Student" 
+                                          Property="LastName" 
+                                          Title="Last Name"
+                                          Width="150px"
+                                          Sortable="true" />
+
+                    <RadzenDataGridColumn TItem="Student" 
+                                          Property="Email" 
+                                          Title="Email"
+                                          Width="250px"
+                                          Sortable="true">
+                        <Template Context="student">
+                            <RadzenLink Path=@($"mailto:{student.Email}") 
+                                        Text="@student.Email"
+                                        Target="_blank" />
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Student" 
+                                          Property="DateOfBirth" 
+                                          Title="Date of Birth"
+                                          Width="140px"
+                                          Sortable="true">
+                        <Template Context="student">
+                            @student.DateOfBirth.ToString("dd/MM/yyyy")
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Student" 
+                                          Property="PhoneNumber" 
+                                          Title="Phone"
+                                          Width="150px"
+                                          Sortable="true" />
+
+                    <RadzenDataGridColumn TItem="Student" 
+                                          Property="Major" 
+                                          Title="Major"
+                                          Width="180px"
+                                          Sortable="true">
+                        <Template Context="student">
+                            <RadzenBadge BadgeStyle="BadgeStyle.Info" 
+                                         Text="@student.Major" />
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Student" 
+                                          Property="Year" 
+                                          Title="Year"
+                                          Width="80px"
+                                          TextAlign="TextAlign.Center"
+                                          Sortable="true">
+                        <Template Context="student">
+                            <RadzenBadge BadgeStyle="BadgeStyle.Secondary" 
+                                         Text="@student.Year.ToString()" />
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Student" 
+                                          Property="EnrollmentDate" 
+                                          Title="Enrollment Date"
+                                          Width="140px"
+                                          Sortable="true">
+                        <Template Context="student">
+                            @student.EnrollmentDate.ToString("dd/MM/yyyy")
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Student" 
+                                          Property="IsActive" 
+                                          Title="Status"
+                                          Width="100px"
+                                          TextAlign="TextAlign.Center"
+                                          Sortable="true">
+                        <Template Context="student">
+                            <RadzenBadge BadgeStyle="@(student.IsActive ? BadgeStyle.Success : BadgeStyle.Danger)" 
+                                         Text="@(student.IsActive ? "Active" : "Inactive")" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+
+            <!-- Loading Message -->
+            @if (isLoading)
+            {
+                <div class="text-center rz-mt-4">
+                    <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                    <RadzenText TextStyle="TextStyle.Body1" class="rz-mt-2">Loading students...</RadzenText>
+                </div>
+            }
+
+            <!-- No Data Message -->
+            @if (!isLoading && (students == null || !students.Any()))
+            {
+                <div class="text-center rz-mt-4">
+                    <RadzenIcon Icon="school" Style="font-size: 48px; color: #ccc;" />
+                    <RadzenText TextStyle="TextStyle.H5" class="rz-mt-2">No students found</RadzenText>
+                </div>
+            }
+
+            <!-- Summary Information -->
+            @if (students?.Any() == true)
+            {
+                <div class="row rz-mt-4">
+                    <div class="col-md-3">
+                        <RadzenCard class="rz-p-4">
+                            <RadzenText TextStyle="TextStyle.H6" class="rz-color-primary">Total Students</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4">@students.Count()</RadzenText>
+                        </RadzenCard>
+                    </div>
+                    <div class="col-md-3">
+                        <RadzenCard class="rz-p-4">
+                            <RadzenText TextStyle="TextStyle.H6" class="rz-color-info">Active Students</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4">@students.Count(s => s.IsActive)</RadzenText>
+                        </RadzenCard>
+                    </div>
+                    <div class="col-md-3">
+                        <RadzenCard class="rz-p-4">
+                            <RadzenText TextStyle="TextStyle.H6" class="rz-color-warning">Majors</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4">@students.Select(s => s.Major).Distinct().Count()</RadzenText>
+                        </RadzenCard>
+                    </div>
+                    <div class="col-md-3">
+                        <RadzenCard class="rz-p-4">
+                            <RadzenText TextStyle="TextStyle.H6" class="rz-color-success">Avg Year</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4">@students.Average(s => s.Year).ToString("F1")</RadzenText>
+                        </RadzenCard>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    RadzenDataGrid<Student> grid;
+    IEnumerable<Student> students;
+    bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStudents();
+    }
+    private List<Student> CourseTypeEntityList = new List<Student>();
+    private Student CourseTypeEntityListData = new Student();
+
+    async Task LoadStudents()
+    {
+        isLoading = true;
+
+        try
+        {
+            var response = await appservice.GetHttpCall("api/Students");
+
+            if (response?.StatusCode == (int)HttpStatusCode.OK && response.Data != null)
+            {
+                var responseData = JObject.Parse(response.Data.ToString());
+                var Liststudents = responseData["data"];
+                students = Liststudents.ToObject<List<Student>>();
+                CourseTypeEntityListData = students.FirstOrDefault();
+            }
+            else
+            {
+                Console.WriteLine($"API Error: {response?.StatusMessage ?? "Unknown error"}");
+            }
+        }
+        catch (Exception ex)
+        {
+            students = new List<Student>();
+            Console.WriteLine($"Error loading students: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public class Student
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Major { get; set; }
+        public int Year { get; set; }
+        public DateTime EnrollmentDate { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+}
