@@ -209,27 +209,27 @@
     {
         try
         {
-            // Log the userData for debugging
-           // await JSRuntime.InvokeVoidAsync("console.log", "Processing user data:", userData.ToString());
-
-            // Extract properties using the exact keys from your JSON
-            var clientId = userData.Value<int>("clientId").ToString();
-            var userId = userData.Value<int>("userId").ToString();
-            var userName = userData.Value<string>("userName");
-            var roleId = userData.Value<int>("roleId").ToString();
-            var imageURL = userData.Value<string>("imageURL");
-            var emailId = userData.Value<string>("emailId");
-
-            if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(userId))
+            var actualData = userData["data"] as JObject;
+            
+            if (actualData != null)
             {
-                // Save relevant session values
-                await Session.SetItemAsync("UserSessionCompanyId", clientId);
-                await Session.SetItemAsync("UserSessionUserId", userId);
-                await Session.SetItemAsync("UserSessionUserName", userName);
-                await Session.SetItemAsync("UserSessionRoleId", roleId);
-                await Session.SetItemAsync("UserSessionImageURL", imageURL);
-                await Session.SetItemAsync("UserSessionEmail", emailId);
+                // Store values without extra quotes
+                await Session.SetItemAsync("UserSessionUserId", 
+                    actualData.Value<int>("userId").ToString());
+                await Session.SetItemAsync("UserSessionUserName", 
+                    actualData.Value<string>("userName"));
+                await Session.SetItemAsync("UserSessionEmail", 
+                    actualData.Value<string>("emailId"));
+                await Session.SetItemAsync("UserSessionCompanyId", 
+                    actualData.Value<int>("clientId").ToString());
+                await Session.SetItemAsync("UserSessionRoleId", 
+                    actualData.Value<int>("roleId").ToString());
+                await Session.SetItemAsync("UserSessionUserImageId", 
+                    actualData.Value<int>("userImageId").ToString());
+                await Session.SetItemAsync("UserSessionImageURL", 
+                    actualData.Value<string>("imageURL"));
 
+                // Handle remember me functionality
                 if (loginModel.RememberMe)
                 {
                     await Session.SetItemAsync("RememberedEmail", loginModel.EmailId);
@@ -239,16 +239,16 @@
                     await Session.RemoveItemAsync("RememberedEmail");
                 }
 
-                NavigationManager.NavigateTo("/no-programs", forceLoad: true);
+                NavigationManager.NavigateTo("/dashboard", true);
             }
             else
             {
-                await DialogService.Alert("Login response was incomplete. Missing required user data.", "Login Error");
+                await DialogService.Alert("Invalid response data structure.", "Login Error");
             }
         }
         catch (Exception ex)
         {
-            //await JSRuntime.InvokeVoidAsync("console.error", "Error processing user data:", ex.Message);
+            await DialogService.Alert($"Error processing login data: {ex.Message}", "Login Error");
             throw;
         }
     }

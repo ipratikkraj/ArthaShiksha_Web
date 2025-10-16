@@ -1,0 +1,19 @@
+/* Add these styles to your existing CSS */
+.fade-in {
+    opacity: 0;
+    animation: fadeIn 0.5s ease-in forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.dashboard-page {
+    padding: 24px;
+    max-width: 1920px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Add any additional dashboard styles here */

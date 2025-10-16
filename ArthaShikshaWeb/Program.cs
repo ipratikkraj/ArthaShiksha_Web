@@ -1,4 +1,6 @@
 using ArthaShikshaClient;
+using ArthaShikshaWeb.Services;
+using ArthaShikshaWeb.Shared;
 using Blazored.SessionStorage;
 using LearniFyWeb.Services.AppService;
 using Microsoft.AspNetCore.Components.Web;
@@ -41,6 +43,8 @@ builder.Services.AddLogging();
 // Register AppService
 builder.Services.AddScoped<IAppService, AppService>();
 builder.Services.AddScoped<DialogService>();
+//builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IMenuService, MenuService>();
 
 // Build and run
 await builder.Build().RunAsync();
